@@ -1,0 +1,165 @@
+---
+title: "Exploring the BRFSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(statsr)
+```
+
+### Load data
+
+ 
+
+```{r load-data}
+load("brfss2013.RData")
+```
+
+
+
+* * *
+
+## Part 1: Data
+### Brief information about BFRSS
+The Behavioral Risk Factor Surveillance System (BRFSS) is a collaborative project between all of the states in the United States (US) and participating US territories and the Centers for Disease Control and Prevention (CDC). The BRFSS is administered and supported by CDC's Population Health Surveillance Branch, under the Division of Population Health at the National Center for Chronic Disease Prevention and Health Promotion. BRFSS is an ongoing surveillance system designed to measure behavioral risk factors for the non-institutionalized adult population (18 years of age and older) residing in the US.
+
+### The mission of BFRSS
+The BRFSS objective is to collect uniform, state-specific data on preventive health practices and risk behaviors that are linked to chronic diseases, injuries, and preventable infectious diseases that affect the adult population. Factors assessed by the BRFSS in 2013 include tobacco use, HIV/AIDS knowledge and prevention, exercise, immunization, health status, healthy days - health-related quality of life, health care access, inadequate sleep, hypertension awareness, cholesterol awareness, chronic health conditions, alcohol consumption, fruits and vegetables consumption, arthritis burden, and seat belt use.
+
+### Data collection
+Since 2011, BRFSS conducts both landline telephone and cellular telephone-based surveys. In conducting landline telephone survey, interviewers collect data from a randomly selected adult in a household. In conducting the cellular telephone version of the BRFSS questionnaire, interviewers collect data from an adult who participates by using a cellular telephone and resides in a private residence or college housing. Therefore, BRFSS uses 2 separate samples for conducting the research: 1) The landline telephone sample and 2) The cellular telephone sample.
+
+#### The landline telephone sample
+For the landline sample, Disproportionate stratified sampling (DSS) has been used, which means that the sample size of each stratum does not have to be proportional to the population size of the stratum. Telephone numbers are drawn from two strata that are based on the presumed density of known telephone household numbers. In this design, telephone numbers are classified into strata that are either high  or medium density to yield residential telephone numbers. Telephone numbers in the high density stratum are sampled at the highest rate.
+
+#### The cellular telephone sample
+The cellular telephone sample is randomly generated from a sampling frame of confirmed cellular area code and prefix combinations. Cellular telephone respondents are randomly selected with each having equal probability of selection. States complete approximately 20% of their completed interviews with respondents on cell phones.
+
+### Implications of data collection method on scope of inference
+There are some drawbacks in sampling method and the study method itself which can prevent drawing strong conclusions from the study in general.
+
+First of all, using telephones for conducting a study introduces some bias. In this way, study limits the sampling to those who have a landline telephone and reside in residential or college housing or have cellular telephone. Additionally, there is a possibility that even the ones who have telephones may not answer the call made by study conductors which introduces nonresponse bias.
+
+Secondly, the samples sizes from each state are not proportional to state population (not normalized), therefore small and large states are not represented according to their population size.
+
+The last but not least is the issue with the interview format. Respondents themselves may not know/remember accurate answer to some questions asked such as, During the past 30 days, for about how may days have you felt sad, blue, or depressed?  or they could intentionally give wrong answers due to the fact that some of the questions are personal or sensitive, such as how many days our of past 30 days an individual had alcoholic beverage.
+
+#### Generalizability
+Sampling is aimed at non-institutionalized adult population (18 years of age and older) residing in the US. Overall, an estimated 97.5% of US households had telephone service in 2012 and telephone coverage varies across states with a range of 95.3% in New Mexico to 98.6% in Connecticut. As noted in Data collection section, stratified sampling methodology is used for landline telephone sample, and random sampling for cellular telephone sample.  Due to large sample size, extensive areal coverage and random sampling method, the study can be generalized to all non-institutionalized adult population residing in the US.
+
+#### Causality
+As the study is observational in nature and there is not any random assignment to study groups, the survey cannot be used to make causal relationships. limiting an inference scope to associative relationships.
+
+
+* * *
+
+## Part 2: Research questions
+
+**Research question 1:**
+Is there is any correlation between number of days person feel depressed in past 30 days and number of times he/she did exercise in past 30 days? Is this relationship different for male and females?
+
+This research question would help to determine whether doing exercises have an association with stress level and how different this association is between the two sexes?
+
+
+
+**Research question 2:**
+What is the average number of hours spent on work in each state for people with $75 000+ income?
+
+This question aims to find out the average number of hours spent on work by people earning $75 000+ income in each state and identify top 3 states by this test statistics.
+
+**Research question 3:**
+Does the amount of time spent on sleep associates with the feeling of fully energized (past 30 days)?
+
+Here aim is to determine whether amount of sleep correlates with the feeling of being energized.
+
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+
+**Research question 1:**
+Is there is any correlation between number of days person feel depressed in past 30 days and number of times he/she did exercise in past 30 days? Is this relationship different for male and females?
+
+Let's first rename qlmentl2 variable ,which represents the number of days person feel depressed in past 30 days, to days_felt_stressed variable and exerany2, which shows whether the person exercised or not during last 30 days, to did_exercise_or_not variable. As we renamed both variables, we can now explore them
+
+```{r}
+brfss2013 = rename(brfss2013, did_exercise_or_not = exerany2, days_felt_stressed = qlmentl2)
+brfss2013 %>% group_by(days_felt_stressed) %>% summarize(count=n())
+
+```
+We see that for most of the respondents the value is missing (NA), which dramatically reduces the number of observations. Excluding the observations with missing value, majority of people reported 0 days as number of days they felt depressed.
+
+```{r}
+brfss2013 %>% group_by(did_exercise_or_not) %>% summarize(count=n())
+
+```
+Here, fortunately we see that the number of missing values are quite lower and most respondents reported that they did exercises in last 30 days.
+
+Now, we can extract days_felt_stressed, did_exercise_or_not and sex variables from original dataset and make new dataframe for further data analysis and visualization and remove all missing values. 
+
+```{r}
+research1 <- subset(brfss2013, select=c("days_felt_stressed", "did_exercise_or_not","sex" ))
+research1 <- na.omit(research1)
+```
+
+We can subset data do 2 separate bar charts to compare results between males and females:
+```{r}
+research1_male <- subset(research1, sex=="Male")
+research1_female <- subset(research1, sex=="Female")
+ggplot(data=research1_male, aes(days_felt_stressed, fill=did_exercise_or_not)) +
+geom_bar(stat="bin")+labs(title = "Bar chart for males data")
+ggplot(data=research1_female, aes(days_felt_stressed, fill=did_exercise_or_not)) +
+geom_bar(stat="bin")+labs(title = "Bar chart for females data")
+```
+
+
+According to two bar charts there is not any strong association between doing exercises and number of days felt stressed for both males and females. However, as data on doing exercises is categorical and it is not possible to determine whether "Yes" means doing exercise once for last 30 days or at higher extreme every day. Therefore, based on our data it is not readily possible to determinate correlation between physical activeness and number of days felt stressed.
+
+**Research quesion 2:**
+What is the average number of hours spent on work in each state for people with $75 000+ income?
+
+Again some data transformation and visualization
+
+```{r}
+brfss2013 = rename(brfss2013, state = X_state, number_of_hours_work =scntwrk1,income=income2)
+research2 <- subset(brfss2013, select=c("state", "number_of_hours_work","income" ))
+research2 <- na.omit(research2)
+research2 <- subset(research2, income=="$75,000 or more")
+average_by_state <-aggregate(research2[,2], list(research2$state), mean)
+average_by_state = rename(average_by_state, state = Group.1, average_hours_worked=x)
+average_by_state$state <- factor(average_by_state$state, levels = average_by_state$state[order(average_by_state$average_hours_worked)])
+ggplot(data=average_by_state, aes(x=state, y=average_hours_worked), las=2) +
+geom_bar(stat="identity")+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))+labs(title = "Average number of hours spent on work in each state for people with $75 000 + income")
+```
+
+Unfortunately, after removing missing values from data and filtering income to be $75 000+, we missed most of the data.
+We see that in most of states people with $75 000 income spend 45+ hours at work. Louisiana, Georgia and New Mexico are top 3 states by highest number of hours spent on job by citizens with $75k+ income.
+
+**Research question 3:**
+Does the amount of time spent on sleep associates with the feeling of fully energized (past 30 days)?
+
+```{r}
+brfss2013 = rename(brfss2013, sleep_time=sleptim1, days_full_energy=qlhlth2)
+research3 <- subset(brfss2013, select=c("sleep_time", "days_full_energy"))
+research3 <- na.omit(research3)
+ggplot(research3, aes(x=sleep_time, y=days_full_energy)) + geom_point()+geom_smooth(method=lm)+labs(title = "        Days people felt energized vs sleep time")
+
+```
+
+Although, due to discrete nature of numerical variables, visualized scatterplot is far from ideal, in general after fitting linear regression line we see that, overall, there is positive correlation between sleep time and number of days people felt energized.
+
+
+## Part 4: Conclusion
+
+Based on analysis of BRFSS data we concluded that 1) based on the nature of provided data it is not possible to determine the correlation between physical activeness and number of days felt stressed 2) Louisiana, Georgia and New Mexico are top 3 states by highest number of hours spent on job by citizens with $75k+ income 3) there is positive correlation between sleep time and number of days people felt energized.
