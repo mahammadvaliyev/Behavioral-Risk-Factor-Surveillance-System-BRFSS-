@@ -1,5 +1,5 @@
 # Project description
-Projects aims 1) to analyze the BRFSS (Behavioral Risk Factor Surveillance System) data, 2) discuss the data collection principle for the data 3) implications of data collection on generalizability of results and possibility of making casual inferences.
+Projects aims 1) to analyze the Behavioral Risk Factor Surveillance System (BRFSS) data, 2) discuss the data collection principle for the data 3) implications of data collection on generalizability of results and possibility of making casual inferences.
 
 # Description of data
 The Behavioral Risk Factor Surveillance System (BRFSS) is a collaborative project between all of the states in the United States (US) and participating US territories and the Centers for Disease Control and Prevention (CDC). The BRFSS is administered and supported by CDC’s Population Health Surveillance Branch, under the Division of Population Health at the National Center for Chronic Disease Prevention and Health Promotion. BRFSS is an ongoing surveillance system designed to measure behavioral risk factors for the non-institutionalized adult population (18 years of age and older) residing in the US.
